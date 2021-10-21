@@ -3,9 +3,10 @@ import RNCanvas, {
 } from "react-native-canvas";
 
 export default interface CanvasMethods {
+  clear(): void,
   getRefs(): {
-    canvas: RNCanvas,
-    context2d: CanvasRenderingContext2D
+    context2d: CanvasRenderingContext2D,
+    rnCanvas: RNCanvas
   },
   switchToDrawing(): void,
   switchToErasing(): void

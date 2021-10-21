@@ -1,21 +1,18 @@
-import React from "react";
 import {
   ImageSourcePropType,
   StyleProp,
   ViewStyle
 } from "react-native";
+import CanvasMethods from "../CanvasMethods";
 
-import CanvasAndCanvasWrapperProperties from "./CanvasAndCanvasWrapperProperties";
+// export interface BackgroundImageProperties {
+//   Component?: typeof React.Component | undefined,
+//   props: { [key: string]: any }
+// };
 
-export default interface CanvasProperties extends CanvasAndCanvasWrapperProperties {
-  backgroundImage?: {
-    Component?: typeof React.Component | undefined,
-    borderBottomWidth?: number | undefined,
-    borderEndWidth?: number | undefined,
-    borderStartWidth?: number | undefined,
-    borderTopWidth?: number | undefined,
-    borderWidth?: number | undefined,
-    source: ImageSourcePropType
-  },
+export default interface CanvasProperties {
+  backgroundImage?: /*BackgroundImageProperties |*/ ImageSourcePropType,
+  containerStyle?: StyleProp <ViewStyle> | undefined,
+  onCreated?: (canvas: CanvasMethods) => void,
   style?: StyleProp <ViewStyle> | undefined
 };
