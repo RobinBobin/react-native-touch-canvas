@@ -1,3 +1,3 @@
-import TouchableCanvas from "./src/TouchableCanvas";
+import Canvas from "./src/Canvas";
 
-export default TouchableCanvas;
+export default Canvas;

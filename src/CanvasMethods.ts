@@ -3,7 +3,7 @@ import RNCanvas, {
 } from "react-native-canvas";
 
 export default interface CanvasMethods {
-  get(): {
+  getRefs(): {
     canvas: RNCanvas,
     context2d: CanvasRenderingContext2D
   },

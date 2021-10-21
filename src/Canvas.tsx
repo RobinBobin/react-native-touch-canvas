@@ -8,14 +8,15 @@ import RNCanvas, {
   CanvasRenderingContext2D
 } from "react-native-canvas";
 import CanvasMethods from "./CanvasMethods";
-import CanvasWrapper from "./CanvasWrapper";
+import CanvasWrapperContainer from "./CanvasWrapperContainer";
+import CanvasProperties from "./properties/CanvasProperties";
 
-const CanvasContainer = forwardRef((props, ref) => {
+const Canvas = forwardRef((props: CanvasProperties, ref) => {
   const canvasRef = useRef <RNCanvas> ();
   const context2dRef = useRef <CanvasRenderingContext2D> ();
   
   const initImperativeHandle = useCallback((): CanvasMethods => ({
-    get() {
+    getRefs() {
       return {
         canvas: canvasRef.current,
         context2d: context2dRef.current
@@ -38,12 +39,13 @@ const CanvasContainer = forwardRef((props, ref) => {
   );
   
   return (
-    <CanvasWrapper
+    <CanvasWrapperContainer
       { ...props }
       canvasRef={canvasRef}
       context2dRef={context2dRef}
+      ref={ref}
     />
   );
 });
 
-export default CanvasContainer;
+export default Canvas;
