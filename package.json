@@ -4,7 +4,8 @@
     "url": "https://github.com/RobinBobin/react-native-touch-canvas/issues"
   },
   "dependencies": {
-    "react-native-canvas": "^0.1.38"
+    "react-native-canvas": "^0.1.38",
+    "simple-common-utils": "^2.6.0"
   },
   "description": "Touch enabled canvas for React Native",
   "devDependencies": {

@@ -11,6 +11,7 @@ import React, {
   useState
 } from "react";
 import {
+  Image,
   ImageBackground,
   LayoutChangeEvent,
   View
@@ -21,6 +22,7 @@ import RNCanvas, {
 import {
   GestureHandlerRootView
 } from "react-native-gesture-handler";
+import { StaticUtils } from "simple-common-utils";
 import CanvasMethods from "./CanvasMethods";
 import CanvasProperties from "./properties/CanvasProperties";
 
@@ -28,16 +30,42 @@ const Canvas = forwardRef((props: CanvasProperties, ref) => {
   const context2d = useRef <CanvasRenderingContext2D> ();
   const rnCanvas = useRef <RNCanvas> ();
   
-  const [canvasSize, setCanvasSize] = useState <CanvasSize> ();
+  const [canvasSize, setCanvasSize] = useState <Size> ();
   
   const canvasMethods = useCanvasMethods(rnCanvas, context2d, ref);
   
-  const canvasOnLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
-    setCanvasSize({
-      height: nativeEvent.layout.height,
-      width: nativeEvent.layout.width
-    });
-  }, []);
+  const canvasOnLayout = useCallback(async ({nativeEvent}: LayoutChangeEvent) => {
+    let { height, width } = nativeEvent.layout;
+    let imageHeight: number, imageWidth: number;
+    
+    if (props.backgroundImage?.constructor === Number) {
+      const ras = Image.resolveAssetSource(props.backgroundImage);
+      
+      imageHeight = ras.height;
+      imageWidth = ras.width;
+    } else if ((props.backgroundImage as {})?.hasOwnProperty("uri")) {
+      try {
+        const size = await new Promise <Size> ((resolve, reject) => {
+          Image.getSize(
+            props.backgroundImage["uri"],
+            (width: number, height: number) => resolve({height, width}),
+            reject
+          );
+        });
+        
+        imageHeight = size.height;
+        imageWidth = size.width;
+      } catch (error) {
+        console.log(StaticUtils.formatError(error));
+      }
+    }
+    
+    if (imageHeight && imageWidth) {
+      height = imageHeight * width / imageWidth;
+    }
+    
+    setCanvasSize({height, width});
+  }, [props.backgroundImage]);
   
   const handleCanvas = useCallback((canvas: RNCanvas) => {
     rnCanvas.current = canvas;
@@ -132,7 +160,7 @@ function useCanvasMethods(
 
 export default Canvas;
 
-interface CanvasSize {
+interface Size {
   height: number,
   width: number
 }
