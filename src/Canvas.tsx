@@ -1,13 +1,17 @@
 import React, {
+  EffectCallback,
   ForwardedRef,
+  Fragment,
   MutableRefObject,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
-  useState,
-  useRef
+  useRef,
+  useState
 } from "react";
 import {
+  ImageBackground,
   LayoutChangeEvent,
   View
 } from "react-native";
@@ -18,61 +22,77 @@ import {
   GestureHandlerRootView
 } from "react-native-gesture-handler";
 import CanvasMethods from "./CanvasMethods";
-import CanvasWrapper, {
-  OnCreated
-} from "./CanvasWrapper";
 import CanvasProperties from "./properties/CanvasProperties";
 
 const Canvas = forwardRef((props: CanvasProperties, ref) => {
-  const rnCanvas = useRef <RNCanvas> ();
   const context2d = useRef <CanvasRenderingContext2D> ();
+  const rnCanvas = useRef <RNCanvas> ();
+  
+  const [canvasSize, setCanvasSize] = useState <CanvasSize> ();
   
   const canvasMethods = useCanvasMethods(rnCanvas, context2d, ref);
   
-  const containerOnLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
-    if (props.containerStyle) {
-      setCanvasHierarchy(getCanvasHierarchy(nativeEvent.layout.height, nativeEvent.layout.width));
-    }
-  }, [props]);
+  const canvasOnLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
+    setCanvasSize({
+      height: nativeEvent.layout.height,
+      width: nativeEvent.layout.width
+    });
+  }, []);
   
-  const getCanvasHierarchy = useCallback((height?: number, width?: number) => {
-    return (
-      (!props.backgroundImage && !props.containerStyle)
-      || (height && width)
-      ?
-        <View
-          pointerEvents={"none"}
-          style={props.style}
-        >
-          <CanvasWrapper
-            onCreated={onCanvasCreated}
-            height={height}
-            width={width}
-          />
-        </View>
-      :
-      null
-    );
-  }, [props]);
-  
-  const onCanvasCreated = useCallback <OnCreated> (canvas => {
+  const handleCanvas = useCallback((canvas: RNCanvas) => {
     rnCanvas.current = canvas;
-    context2d.current = canvas.getContext("2d");
+    context2d.current = canvas ? canvas.getContext("2d") : null;
     
-    if (props.onCreated) {
-      props.onCreated(canvasMethods);
+    if (context2d.current) {
+      canvas.height = canvasSize.height;
+      canvas.width = canvasSize.width;
+      
+      if (props.onCreated) {
+        props.onCreated(canvasMethods);
+      }
     }
-  }, [canvasMethods, props]);
+  }, [
+    canvasMethods,
+    canvasSize,
+    props.onCreated
+  ]);
   
-  const [canvasHierarchy, setCanvasHierarchy] = useState(getCanvasHierarchy);
+  useEffect(setCanvasSize as EffectCallback, [props]);
   
   return (
-    <GestureHandlerRootView
-      onLayout={containerOnLayout}
+    <View
       style={props.containerStyle}
     >
-      { canvasHierarchy }
-    </GestureHandlerRootView>
+      {
+        React.createElement(
+          canvasSize ? GestureHandlerRootView : Fragment,
+          canvasSize ? { style: canvasSize } : null,
+          <View
+            onLayout={canvasSize ? undefined : canvasOnLayout}
+            pointerEvents={"none"}
+            style={props.style}
+          >
+            {
+              canvasSize && (
+                !props.backgroundImage
+                ?
+                  <RNCanvas
+                    ref={handleCanvas}
+                  />
+                :
+                  <ImageBackground
+                    source={props.backgroundImage}
+                  >
+                    <RNCanvas
+                      ref={handleCanvas}
+                    />
+                  </ImageBackground>
+              )
+            }
+          </View>
+        )
+      }
+    </View>
   );
 });
 
@@ -105,9 +125,14 @@ function useCanvasMethods(
     }
   }));
   
-  useImperativeHandle(ref, () => canvasMethods, []);
+  useImperativeHandle(ref, () => canvasMethods, [canvasMethods]);
   
   return canvasMethods;
 }
 
 export default Canvas;
+
+interface CanvasSize {
+  height: number,
+  width: number
+}
